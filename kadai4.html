@@ -6,7 +6,10 @@
 </head>
 <body>
     <h1 id="vending-machine">自動販売機システム</h1>
+    <p id="wallet-area">所持金：<span id="wallet">500</span>円</p>
+    <p id="message"></p>
     <table id="item_area" border="1"></table>
+
     <script>
         const items = [
             { id: 1, name: "緑茶", price: 140, stock: 5 },
@@ -18,6 +21,8 @@
             { id: 7, name: "コーヒー", price: 170, stock: 8 },
             { id: 8, name: "紅茶", price: 140, stock: 6 }
         ];
+
+        let wallet = 500; 
 
         class Item {
             static number = 1;
@@ -38,17 +43,26 @@
             }
 
             buyItem() {
-                if (this.stock >= 1) {
-                    console.log(`商品番号: ${this.id}, 商品名: ${this.name}を購入します。`);
-                    this.stock--;
-                    console.log(`残りは${this.stock}個です。`);
+                const stockCell = document.getElementById(`stock${this.id}`);
+                const walletDisplay = document.getElementById("wallet");
+                const messageArea = document.getElementById("message");
 
-                    //  HTMLの在庫数を更新
-                    const stockCell = document.getElementById(`stock${this.id}`);
-                    if (stockCell) stockCell.textContent = this.stock;
-                } else {
-                    console.log(`${this.name}は商品の在庫がないため購入できません。`);
+                if (this.stock < 1) {
+                    messageArea.textContent = `${this.name}は在庫がありません。`;
+                    return;
                 }
+
+                if (wallet < this.price) {
+                    messageArea.textContent = `所持金が不足しています（${wallet}円）。${this.name}は購入できません。`;
+                    return;
+                }
+
+                this.stock--;
+                wallet -= this.price;
+
+                stockCell.textContent = this.stock;
+                walletDisplay.textContent = wallet;
+                messageArea.textContent = `${this.name}を購入しました。残金は${wallet}円です。`;
             }
         }
 
@@ -57,12 +71,12 @@
 
         const item_list = new Array(items.length);
 
-        // 商品オブジェクトの生成
+
         for (let i = 0; i < items.length; i++) {
             item_list[i] = new Item(items[i].name, items[i].price, items[i].stock);
         }
 
-        // 商品表の作成
+
         for (let i = 0; i < item_list.length; i++) {
             itemArea.innerHTML += `
                 <tr>
@@ -74,7 +88,7 @@
             `;
         }
 
-        //ボタンイベント設定
+
         for (let i = 0; i < item_list.length; i++) {
             document.getElementById("button" + item_list[i].id).onclick = () => {
                 item_list[i].buyItem();
